@@ -9,12 +9,12 @@ sub create {
 na}\p{Han}]小)?|[\p{Hiragana}\p{Katakana}
 \p{Han}])字[\p{Hiragana}\p{Katakana}\p{Ha
 n}]|[\p{Hiragana}\p{Katakana}\p{Han}]*(?
-:(?:[一二三四五六七八九]?十)?[一ニ三四五六七八九]|\d+)(?:条(
+:(?:[一二三四五六七八九]?十)?[一二三四五六七八九]|\d+)(?:条(
 ?:通り?)?|通り?|線)|大字[\p{Hiragana}\p{Katakan
 a}\p{Han}](?:小?字[\p{Hiragana}\p{Katakana
-}\p{Han}])?|(?:(?:[一二三四五六七八九]?十)?[一ニ三四五六
+}\p{Han}])?|(?:(?:[一二三四五六七八九]?十)?[一二三四五六
 七八九]|\d+)(?:丁目|地割)|第(?:(?:[一二三四五六七八九]?十)
-?[一ニ三四五六七八九]|\d+)地割|[\p{Hiragana}\p{Kata
+?[一二三四五六七八九]|\d+)地割|[\p{Hiragana}\p{Kata
 kana}\p{Han}]*?|\p{Han}+丁目))';
     $re =~ s/\n//g;
     $re;

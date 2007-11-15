@@ -19,9 +19,8 @@ my $i;
 while (! $io->eof and my $col = $csv->getline($io)) {
     my $data = $col->[6] . $col->[7];
     next if $cache{$data}++;
-    $ra_city->add($data);
-    $ra_city->add($col->[7]);
 
+    my $pref = $col->[6];
     my($city, $town);
     if ($col->[7] =~ /^(.+?·´)(.+[Â¼Ä®])$/) {
         ($city, $town) = ($1, $2);
@@ -33,7 +32,11 @@ while (! $io->eof and my $col = $csv->getline($io)) {
         ($city, $town) = ($col->[7], '');
     }
 
-    $ra_city->add($col->[6] . $town);
+    $ra_city->add("$pref$city$town");
+    $ra_city->add("$pref$city");
+    $ra_city->add("$pref$town");
+    $ra_city->add("$city$town");
+    $ra_city->add("$city");
     $ra_city->add($town) if $town;
     add_map($map, $col->[6], $city, $town);
 }
@@ -193,11 +196,12 @@ CODE
 close($out);
 
 }
+
 my $ra_number = Regexp::Assemble->new;
 my $ra_aza    = Regexp::Assemble->new;
 
 my $dash   = '[-¡¾¡İ¤Î¥Î]';
-my $number = '(?:(?:[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]?½½)?[°ì¥Ë»°»Í¸ŞÏ»¼·È¬¶å]|\d+)';
+my $number = '(?:(?:[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]|\d+)';
 my $number_prefix = '[ÅìÀ¾ÆîËÌº¸±¦]';
 my $numbers = sprintf("(?:%s?%s|[a-zA-Z£á-£ú£Á-£Ú])", $number_prefix, $number);
 my $chome = sprintf("(?:%s(?:ÃúÌÜ|%s))?", $number, $dash);
