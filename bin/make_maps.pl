@@ -8,9 +8,18 @@ use Regexp::Assemble;
 use Text::CSV_PP;
 
 my $out;
-if (0) {
 my $ra_city = Regexp::Assemble->new;
+my $ra_number = Regexp::Assemble->new;
+my $ra_aza    = Regexp::Assemble->new;
 
+my $dash   = '[-¡¾¡Ý¤Î¥Î]';
+my $number = '(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)';
+my $number_prefix = '[ÅìÀ¾ÆîËÌº¸±¦¾å²¼]';
+my $numbers = sprintf("(?:%s?%s|[a-zA-Z£á-£ú£Á-£Ú])", $number_prefix, $number);
+my $chome = sprintf("(?:%s(?:ÃúÌÜ|%s))?", $number, $dash);
+my $ban = 'ÈÖÃÏ?';
+
+if (0) {
 my $csv = Text::CSV_PP->new({binary => 1});
 my $io = IO::File->new('./ken_all.csv', '<:encoding(shiftjis)') or die $!;
 my $map = {};
@@ -196,16 +205,6 @@ CODE
 close($out);
 
 }
-
-my $ra_number = Regexp::Assemble->new;
-my $ra_aza    = Regexp::Assemble->new;
-
-my $dash   = '[-¡¾¡Ý¤Î¥Î]';
-my $number = '(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)';
-my $number_prefix = '[ÅìÀ¾ÆîËÌº¸±¦]';
-my $numbers = sprintf("(?:%s?%s|[a-zA-Z£á-£ú£Á-£Ú])", $number_prefix, $number);
-my $chome = sprintf("(?:%s(?:ÃúÌÜ|%s))?", $number, $dash);
-my $ban = 'ÈÖÃÏ?';
 
 $ra_number->add('\d+');
 $ra_number->add(sprintf("%s%s", $chome, '\d+'));

@@ -1,6 +1,7 @@
 package Geography::AddressExtract::Japan;
 use strict;
 use warnings;
+use encoding "euc-jp";
 
 use Carp;
 use UNIVERSAL::require;
@@ -65,12 +66,32 @@ sub _extract {
         $opt{city}   = $1 if $1;
         $opt{aza}    = $2 if $2;
         $opt{number} = $3 if $3;
-        push @{ $self->{addresses} }, Geography::AddressExtract::Japan::Address->new(%opt);
+
+	$self->normalize($', \%opt);#');
+			 
+	push @{ $self->{addresses} }, Geography::AddressExtract::Japan::Address->new(%opt);
     }
+}
+
+sub normalize {
+    my($self, $right, $opt) = @_;
+
+    if ($opt->{number} && $opt->{number} =~ /^([ÅìÀ¾ÆîËÌº¸±¦¾å²¼])/) {
+	my $prefix = $1;
+	if ($right =~ /^((?:ÈÖÃÏ?)?[-¡¾¡İ¤Î¥Î]?(?:(?:(?:[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å¡»]+|\d+)|[a-zA-Z£á-£ú£Á-£Ú])¹æ?)/) {
+	    my $append = $1;
+	    $opt->{aza} .= $prefix;
+	    $opt->{number} =~ s/^$prefix//;
+	    $opt->{number} .= $append;
+	}
+    }
+
 }
 
 sub dedupe {
     my $self = shift;
+
+    return unless @{ $self->addresses };
 
     # sort
     $self->addresses( sort { $a->index <=> $b->index } @{ $self->addresses });
