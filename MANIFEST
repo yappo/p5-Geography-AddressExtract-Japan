@@ -1,0 +1,11 @@
+bin/make_maps.pl
+test.pl
+lib/Geography/AddressExtract/Japan/Normalize.pm
+lib/Geography/AddressExtract/Japan/Map/City.pm
+lib/Geography/AddressExtract/Japan/Regexp/Number.pm
+lib/Geography/AddressExtract/Japan/Regexp/Aza.pm
+lib/Geography/AddressExtract/Japan/Regexp/Dupe.pm
+lib/Geography/AddressExtract/Japan/Regexp/City.pm
+lib/Geography/AddressExtract/Japan.pm
+Makefile.PL
+MANIFEST
