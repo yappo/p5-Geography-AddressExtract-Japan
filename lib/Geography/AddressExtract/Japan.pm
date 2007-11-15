@@ -66,10 +66,8 @@ sub _extract {
         $opt{city}   = $1 if $1;
         $opt{aza}    = $2 if $2;
         $opt{number} = $3 if $3;
-
-	$self->normalize($', \%opt);#');
-			 
-	push @{ $self->{addresses} }, Geography::AddressExtract::Japan::Address->new(%opt);
+        $self->normalize($', \%opt);#');
+        push @{ $self->{addresses} }, Geography::AddressExtract::Japan::Address->new(%opt);
     }
 }
 
@@ -77,13 +75,14 @@ sub normalize {
     my($self, $right, $opt) = @_;
 
     if ($opt->{number} && $opt->{number} =~ /^([ÅìÀ¾ÆîËÌº¸±¦¾å²¼])/) {
-	my $prefix = $1;
-	if ($right =~ /^((?:ÈÖÃÏ?)?[-¡¾¡Ý¤Î¥Î]?(?:(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)|[a-zA-Z£á-£ú£Á-£Ú])¹æ?)/) {
-	    my $append = $1;
-	    $opt->{aza} .= $prefix;
-	    $opt->{number} =~ s/^$prefix//;
-	    $opt->{number} .= $append;
-	}
+        my $prefix = $1;
+        if ($right =~ /^((?:ÈÖÃÏ?)?[-¡¾¡Ý¤Î¥Î]?(?:(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)|[a-zA-Z£á-£ú£Á-£Ú])¹æ?)/) {
+            my $append = $1;
+            $opt->{aza} .= $prefix;
+            $opt->{number} =~ s/^$prefix//;
+            $opt->{number} .= $append;
+            $opt->{match_text} .= $append;
+        }
     }
 
 }
