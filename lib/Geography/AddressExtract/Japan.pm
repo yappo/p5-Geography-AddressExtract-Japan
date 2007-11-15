@@ -6,59 +6,102 @@ use Carp;
 use UNIVERSAL::require;
 
 use base qw( Class::Accessor::Fast );
-__PACKAGE__->mk_accessors( qw(extractor) );
+__PACKAGE__->mk_accessors( qw(opt regexp map addresses) );
 
-#use Geography::AddressExtract::Japan::Extractor;
+use Geography::AddressExtract::Japan::Address;
 
-use Geography::AddressExtract::Japan::Map::City;
-use Geography::AddressExtract::Japan::Regexp::City;
-use Geography::AddressExtract::Japan::Regexp::Aza;
-use Geography::AddressExtract::Japan::Regexp::Number;
-use Geography::AddressExtract::Japan::Regexp::Dupe;
-
-our $VERSION = '0.00_01';
+our $VERSION = '0.00_02';
 
 sub new {
-    my  $class = shift;
-    my %opt    = @_;
+    my($class, %opt) = @_;
+    my $self = bless { opt => { %opt } }, $class;
+    $self->init;
+    $self;
+}
 
-    my $extractor = $opt{extractor} || 'Geography::AddressExtract::Japan::Extractor';
+sub init {
+    my $self = shift;
 
-    my $self = bless {}, $class;
+    for my $module (qw(city aza number dupe )) {
+        $self->{regexp}->{$module} = 
+            $self->load_module('Regexp', $self->opt->{overload}->{regexp}->{$module} || ucfirst($module));
+    }
+    for my $module (qw(city)) {
+        $self->{map}->{$module} = 
+            $self->load_module('Map', $self->opt->{overload}->{map}->{$module} || ucfirst($module));
+    }
+}
 
-    $extractor->require or croak $@;
-    $self->extractor();
+sub load_module {
+    my($self, $type, $module) = @_;
+    $module = sprintf('Geography::AddressExtract::Japan::%s::%s', $type, $module) unless $module =~ /::/;
+    $module->require or croak $@;
+    $module->create;
 }
 
 sub extract {
     my($proto, $data) = @_;
     my $self =  ref $proto ? $proto : $proto->new;
 
-    my @extracts;
+    $self->_extract($data, sprintf('(%s)\s*(%s)\s*(%s)', $self->regexp->{city}, $self->regexp->{aza}, $self->regexp->{number}));
+    $self->_extract($data, sprintf('(%s)\s*(%s)\P{Han}', $self->regexp->{city}, $self->regexp->{aza}));
+    $self->_extract($data, '(' . $self->regexp->{city} . ')');
 
-    my $re_city   = Geography::AddressExtract::Japan::Regexp::City->create;
-    my $re_aza    = Geography::AddressExtract::Japan::Regexp::Aza->create;
-    my $re_number = Geography::AddressExtract::Japan::Regexp::Number->create;
+    $self->dedupe;
 
-    my $seed;
-    while ($data =~ /($re_city)\s*($re_aza)\s*($re_number)/g) {
-	my($city, $aza, $number, $address) = ($1, $2, $3, "$1$2$3");
-        push @extracts, $address;
-    }
-    while ($data =~ /($re_city)\s*($re_aza)\P{Han}/g) {
-	my($city, $aza, $address) = ($1, $2, "$1$2");
-	$seed = "\t" . join "\t", @extracts;
-        next if $seed =~ /\t$address/;
-        push @extracts, $address;
-    }
-    while ($data =~ /($re_city)/g) {
-	my $city = $1;
-	$seed = "\t" . join "\t", @extracts;
-        next if $seed =~ /\t$city/;
-        push @extracts, $city;
-    }
+    wantarray ? @{ $self->addresses } : $self->addresses;
+}
 
-    wantarray ? @extracts : [ @extracts ];
+sub _extract {
+    my($self, $data, $pattern) = @_;
+
+    while ($data =~ /$pattern/g) {
+        my %opt = (
+            index      => length($`),
+            match_text => $&,
+        );
+        $opt{city}   = $1 if $1;
+        $opt{aza}    = $2 if $2;
+        $opt{number} = $3 if $3;
+        push @{ $self->{addresses} }, Geography::AddressExtract::Japan::Address->new(%opt);
+    }
+}
+
+sub dedupe {
+    my $self = shift;
+
+    # sort
+    $self->addresses( sort { $a->index <=> $b->index } @{ $self->addresses });
+
+    # index unique
+    my($last, @set, @addrs);
+    for my $addr (@{ $self->addresses }) {
+        if ($last) {
+            if ($last->index eq $addr->index) {
+                my $cur = @set ? shift @set : $last;
+                push @set, length $addr > length $cur ? $addr : $cur;
+            } else {
+                push @addrs, @set ? shift @set : $last;
+            }
+        }
+        $last = $addr;
+    }
+    push @addrs, @set ? shift @set : $last;
+    $self->addresses([ @addrs ]);
+
+    # dupe unique
+    my @map;
+    @addrs = ();
+    for my $addr (@{ $self->addresses }) {
+        my $i = $addr->index;
+        unless ($map[$i]) {
+            for my $str (split //, $addr) {
+                $map[$i++] = $str;
+            }
+            push @addrs, $addr;
+        }
+    }
+    $self->addresses([ @addrs ]);
 }
 
 
