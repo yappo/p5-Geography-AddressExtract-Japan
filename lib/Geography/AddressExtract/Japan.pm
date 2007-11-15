@@ -43,6 +43,8 @@ sub extract {
     my($proto, $data) = @_;
     my $self =  ref $proto ? $proto : $proto->new;
 
+    $self->addresses([]);
+
     $self->_extract($data, sprintf('(%s)\s*(%s)\s*(%s)', $self->regexp->{city}, $self->regexp->{aza}, $self->regexp->{number}));
     $self->_extract($data, sprintf('(%s)\s*(%s)\P{Han}', $self->regexp->{city}, $self->regexp->{aza}));
     $self->_extract($data, '(' . $self->regexp->{city} . ')');
