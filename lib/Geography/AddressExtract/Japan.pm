@@ -88,7 +88,7 @@ sub dedupe {
         }
         $last = $addr;
     }
-    push @addrs, @set ? shift @set : $last;
+    push(@addrs, @set ? shift @set : $last) if $last;
     $self->addresses([ @addrs ]);
 
     # dupe unique
