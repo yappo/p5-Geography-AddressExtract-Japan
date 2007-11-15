@@ -74,6 +74,9 @@ wiki.chakuriki.net/index.php/ %E9%81%93%E9%A0%93%E5%A0%80 - 38k - ¥­¥ã¥Ã¥·¥å - ´
 osakashi.yuc.jp/search/search.php?genre_code=6 - 24k - ¥­¥ã¥Ã¥·¥å - ´ØÏ¢¥Ú¡¼¥¸
 
 Âçºå»ÔÆ»ÆÜËÙÆó¤Î»Í¤ÎÆó¤È¤¤¤¦É½µ­
+
+ÅìµşÅÔÌÜ¹õ¶è¼«Í³¤¬µÖ°ì-»°-»Í¡»¶å
+
 ');
 
 #print Dumper($ex);

@@ -201,7 +201,7 @@ my $ra_number = Regexp::Assemble->new;
 my $ra_aza    = Regexp::Assemble->new;
 
 my $dash   = '[-¡¾¡İ¤Î¥Î]';
-my $number = '(?:(?:[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]|\d+)';
+my $number = '(?:(?:[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å¡»]+|\d+)';
 my $number_prefix = '[ÅìÀ¾ÆîËÌº¸±¦]';
 my $numbers = sprintf("(?:%s?%s|[a-zA-Z£á-£ú£Á-£Ú])", $number_prefix, $number);
 my $chome = sprintf("(?:%s(?:ÃúÌÜ|%s))?", $number, $dash);
@@ -222,8 +222,8 @@ my $jstr = '[\p{Hiragana}\p{Katakana}\p{Han}]';
 
 $ra_aza->add('\p{Han}+ÃúÌÜ');
 $ra_aza->add(sprintf('%sÃúÌÜ', $number));
-$ra_aza->add(sprintf('Âè%sÃÏ³ä', $number));
-$ra_aza->add(sprintf('%sÃÏ³ä', $number));
+$ra_aza->add(sprintf('%sÂè%sÃÏ³ä', $jstr, $number));
+$ra_aza->add(sprintf('%s%sÃÏ³ä', $jstr, $number));
 $ra_aza->add(sprintf("%s*%sÀş", $jstr, $number));
 $ra_aza->add(sprintf("%s*%s¾ò", $jstr, $number));
 $ra_aza->add(sprintf("%s*%s¾òÄÌ¤ê", $jstr, $number));
