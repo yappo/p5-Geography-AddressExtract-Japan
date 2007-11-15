@@ -115,11 +115,17 @@ sub normalize {
         }
     }
 
-    if ($opt->{aza} && $opt->{aza} =~ /\p{Han}+([てにをはへのにかやも].*)$/) {
+    if ($opt->{aza} && $opt->{aza} =~ /\p{Han}([てにをはへのにかやも])$/) {
         my $prefix = $1;
         $opt->{aza} =~ s/$prefix$//;
         $opt->{number} = '';
         $opt->{match_text} =~ s/($opt->{aza}).+$/$1/;
+    }
+
+    if ($opt->{aza} && $opt->{aza} =~ /^(?:[内民]|街地|議員|出身|在住)$/) {
+        $opt->{aza} = '';
+        $opt->{number} = '';
+        $opt->{match_text} = $opt->{city};
     }
 
 }

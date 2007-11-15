@@ -98,6 +98,9 @@ osakashi.yuc.jp/search/search.php?genre_code=6 - 24k - キャッシュ - 関連ページ
 金沢市吉原町へ１１０
 
 大和市嘘町にある10K
+
+東京都新宿区新宿754-1
+078-959
 ');
 
 #print Dumper($ex);
