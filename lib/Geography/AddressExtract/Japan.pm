@@ -74,6 +74,7 @@ sub _extract {
 sub normalize {
     my($self, $right, $opt) = @_;
 
+    # address position normalize
     if ($opt->{number} && $opt->{number} =~ /^([ÅìÀ¾ÆîËÌº¸±¦¾å²¼])/) {
         my $prefix = $1;
         if ($right =~ /^((?:ÈÖÃÏ?)?[-¡¾¡Ý¤Î¥Î]?(?:(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)|[a-zA-Z£á-£ú£Á-£Ú])¹æ?)/) {
@@ -83,6 +84,42 @@ sub normalize {
             $opt->{number} .= $append;
             $opt->{match_text} .= $append;
         }
+    }
+
+    if ($opt->{aza} && $opt->{aza} =~ /^([\p{Hiragana}\p{Katakana}])/) {
+        my $prefix = $1;
+        $opt->{aza} = '';
+        $opt->{number} = '';
+        $opt->{match_text} =~ s/^($opt->{city})\s*$prefix.+$/$1/;
+    }
+
+    if ($opt->{city} =~ /([\p{Hiragana}\p{Katakana}]+)$/) {
+        my $kana = $1;
+        $opt->{city} =~ s/$kana//;
+        $opt->{aza} = $kana;
+    }
+
+    if ($opt->{city} =~ /([\p{Hiragana}\p{Katakana}]+)$/) {
+        my $kana = $1;
+        $opt->{city} =~ s/$kana//;
+        $opt->{aza} = $kana;
+    }
+
+    if ($opt->{aza} && $opt->{aza} =~ /^[\p{Hiragana}\p{Katakana}]/ && !$opt->{number}) {
+        if ($right =~ /^[-¡¾¡Ý¤Î¥Î](
+            (?:(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)|[a-zA-Z£á-£ú£Á-£Ú])
+            (?:(?:ÈÖÃÏ?)?[-¡¾¡Ý¤Î¥Î]?(?:(?:(?:[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ÞÏ»¼·È¬¶å¡»]+|\d+)|[a-zA-Z£á-£ú£Á-£Ú])¹æ?)?
+            )/x) {
+            $opt->{number} = $1;
+            $opt->{match_text} .= $&;
+        }
+    }
+
+    if ($opt->{aza} && $opt->{aza} =~ /\p{Han}+([¤Æ¤Ë¤ò¤Ï¤Ø¤Î¤Ë¤«¤ä¤â].*)$/) {
+        my $prefix = $1;
+        $opt->{aza} =~ s/$prefix$//;
+        $opt->{number} = '';
+        $opt->{match_text} =~ s/($opt->{aza}).+$/$1/;
     }
 
 }

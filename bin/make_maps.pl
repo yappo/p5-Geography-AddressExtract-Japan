@@ -19,7 +19,7 @@ my $numbers = sprintf("(?:%s?%s|[a-zA-Z£á-£ú£Á-£Ú])", $number_prefix, $number);
 my $chome = sprintf("(?:%s(?:ÃúÌÜ|%s))?", $number, $dash);
 my $ban = 'ÈÖÃÏ?';
 
-if (0) {
+if (1) {
 my $csv = Text::CSV_PP->new({binary => 1});
 my $io = IO::File->new('./ken_all.csv', '<:encoding(shiftjis)') or die $!;
 my $map = {};
@@ -27,6 +27,19 @@ my %cache;
 my $i;
 while (! $io->eof and my $col = $csv->getline($io)) {
     my $data = $col->[6] . $col->[7];
+
+    my @kana;
+    if ($col->[6] ne 'µþÅÔÉÜ' && $col->[8] !~ /^°Ê²¼¤Ë·Ç¤¬/ && ($col->[8] =~ /^[\p{Hiragana}\p{Katakana}]/ || $col->[8] =~ /¡¢/)) {
+        $data = $col->[8];
+        $data =~ s/¡Ê//;
+        for my $str (split /¡¢/, $data) {
+            if ($str =~ /^(\p{Hiragana}+)/ || $str =~ /^(\p{Katakana}+)/) {
+                my $kana = $1;
+                push @kana, $1;
+            }
+        }
+    }
+
     next if $cache{$data}++;
 
     my $pref = $col->[6];
@@ -47,6 +60,12 @@ while (! $io->eof and my $col = $csv->getline($io)) {
     $ra_city->add("$city$town");
     $ra_city->add("$city");
     $ra_city->add($town) if $town;
+    for my $town2 (@kana) {
+        $ra_city->add("$pref$city$town$town2");
+        $ra_city->add("$pref$town$town2");
+        $ra_city->add("$city$town$town2");
+        $ra_city->add("$town$town2") if $town;
+    }
     add_map($map, $col->[6], $city, $town);
 }
 
