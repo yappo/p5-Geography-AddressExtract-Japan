@@ -136,7 +136,7 @@ sub dedupe {
     return unless @{ $self->addresses };
 
     # sort
-    $self->addresses( sort { $a->index <=> $b->index } @{ $self->addresses });
+    $self->addresses([sort { $a->index <=> $b->index } @{ $self->addresses }]);
 
     # index unique
     my($last, @set, @addrs);
