@@ -12,12 +12,12 @@ my $ra_city = Regexp::Assemble->new;
 my $ra_number = Regexp::Assemble->new;
 my $ra_aza    = Regexp::Assemble->new;
 
-my $dash   = '[-¡¾¡İ¤Î¥Î]';
-my $number = '(?:(?:[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å]?½½)?[°ìÆó»°»Í¸ŞÏ»¼·È¬¶å¡»]+|\d+)';
-my $number_prefix = '[ÅìÀ¾ÆîËÌº¸±¦¾å²¼]';
-my $numbers = sprintf("(?:%s?%s|[a-zA-Z£á-£ú£Á-£Ú])", $number_prefix, $number);
-my $chome = sprintf("(?:%s(?:ÃúÌÜ|%s))?", $number, $dash);
-my $ban = 'ÈÖÃÏ?';
+my $dash   = '[-â€âˆ’ã®ãƒ]';
+my $number = '(?:(?:[ä¸€äºŒä¸‰å››äº”å…­ä¸ƒå…«ä¹]?å)?[ä¸€äºŒä¸‰å››äº”å…­ä¸ƒå…«ä¹ã€‡]+|\d+)';
+my $number_prefix = '[æ±è¥¿å—åŒ—å·¦å³ä¸Šä¸‹]';
+my $numbers = sprintf("(?:%s?%s|[a-zA-Zï½-ï½šï¼¡-ï¼º])", $number_prefix, $number);
+my $chome = sprintf("(?:%s(?:ä¸ç›®|%s))?", $number, $dash);
+my $ban = 'ç•ªåœ°?';
 
 if (1) {
 my $csv = Text::CSV_PP->new({binary => 1});
@@ -29,10 +29,10 @@ while (! $io->eof and my $col = $csv->getline($io)) {
     my $data = $col->[6] . $col->[7];
 
     my @kana;
-    if ($col->[6] ne 'µşÅÔÉÜ' && $col->[8] !~ /^°Ê²¼¤Ë·Ç¤¬/ && ($col->[8] =~ /^[\p{Hiragana}\p{Katakana}]/ || $col->[8] =~ /¡¢/)) {
+    if ($col->[6] ne 'äº¬éƒ½åºœ' && $col->[8] !~ /^ä»¥ä¸‹ã«æ²ãŒ/ && ($col->[8] =~ /^[\p{Hiragana}\p{Katakana}]/ || $col->[8] =~ /ã€/)) {
         my $aza = $col->[8];
-        $aza =~ s/¡Ê//;
-        for my $str (split /¡¢/, $aza) {
+        $aza =~ s/ï¼ˆ//;
+        for my $str (split /ã€/, $aza) {
             if ($str =~ /^(\p{Hiragana}+)/ || $str =~ /^(\p{Katakana}+)/) {
                 my $kana = $1;
                 push @kana, $1;
@@ -44,11 +44,11 @@ while (! $io->eof and my $col = $csv->getline($io)) {
 
     my $pref = $col->[6];
     my($city, $town);
-    if ($col->[7] =~ /^(.+?·´)(.+[Â¼Ä®])$/) {
+    if ($col->[7] =~ /^(.+?éƒ¡)(.+[æ‘ç”º])$/) {
         ($city, $town) = ($1, $2);
-    } elsif ($col->[7] =~ /^(.+?»Ô)(.+¶è)$/) {
+    } elsif ($col->[7] =~ /^(.+?å¸‚)(.+åŒº)$/) {
         ($city, $town) = ($1, $2);
-    } elsif ($col->[6] eq 'ÅìµşÅÔ' && $col->[7] =~ /^(.+?Åç)(.+[Ä®Â¼])$/) {
+    } elsif ($col->[6] eq 'æ±äº¬éƒ½' && $col->[7] =~ /^(.+?å³¶)(.+[ç”ºæ‘])$/) {
         ($city, $town) = ($1, $2);
     } else {
         ($city, $town) = ($col->[7], '');
@@ -71,7 +71,7 @@ while (! $io->eof and my $col = $csv->getline($io)) {
 
 my %dupe;
 for my $city  (keys %$map ) {
-    next if $city =~ /.+?·´$/;
+    next if $city =~ /.+?éƒ¡$/;
     $dupe{$city} = {} if $map->{$city} eq 'DUPE';
 }
 
@@ -79,19 +79,19 @@ $io = IO::File->new('./ken_all.csv', '<:encoding(shiftjis)') or die $!;
 while (! $io->eof and my $col = $csv->getline($io)) {
 
     my $town;
-    if ($col->[7] =~ /^(.+?·´)(.+[Â¼Ä®])$/) {
+    if ($col->[7] =~ /^(.+?éƒ¡)(.+[æ‘ç”º])$/) {
         $town = $2;
-    } elsif ($col->[7] =~ /^(.+?»Ô)(.+¶è)$/) {
+    } elsif ($col->[7] =~ /^(.+?å¸‚)(.+åŒº)$/) {
         $town = $2;
-    } elsif ($col->[7] =~ /^(.+?[»Ô¶è])$/) {
+    } elsif ($col->[7] =~ /^(.+?[å¸‚åŒº])$/) {
         $town = $1;
     } else {
         next;
     }
     next unless $dupe{$town};
     my $aza = $col->[8];
-    $aza =~ s/¡Ê.+¡Ë?$//;
-    next if $aza =~ /^°Ê²¼¤Ë·ÇºÜ¤¬/;
+    $aza =~ s/ï¼ˆ.+ï¼‰?$//;
+    next if $aza =~ /^ä»¥ä¸‹ã«æ²è¼‰ãŒ/;
 
     if ($dupe{$town}->{$aza} && $dupe{$town}->{$aza} ne $col->[6] . $col->[7]) {
         $dupe{$town}->{$aza} = 'DUPE';
@@ -228,32 +228,32 @@ close($out);
 $ra_number->add('\d+');
 $ra_number->add(sprintf("%s%s", $chome, '\d+'));
 $ra_number->add(sprintf("%s%s%s%s", $chome, $numbers, $dash, $numbers));
-$ra_number->add(sprintf("%s%s%s%s¹æ", $chome, $numbers, $dash, $numbers));
+$ra_number->add(sprintf("%s%s%s%så·", $chome, $numbers, $dash, $numbers));
 $ra_number->add(sprintf("%s%s%s", $chome, $numbers, $ban));
-$ra_number->add(sprintf("%s%s%s%s¹æ", $chome, $numbers, $ban, $numbers));
+$ra_number->add(sprintf("%s%s%s%så·", $chome, $numbers, $ban, $numbers));
 $ra_number->add(sprintf("%s%s%s%s", $chome, $numbers, $ban, $numbers));
 $ra_number->add(sprintf("%s%s%s%s%s", $chome, $numbers, $ban, $dash, $numbers));
-$ra_number->add(sprintf("%s%s%s%s%s¹æ", $chome, $numbers, $ban, $dash, $numbers));
-$ra_number->add(sprintf("%s%s¹æ", $chome, $numbers, $numbers));
+$ra_number->add(sprintf("%s%s%s%s%så·", $chome, $numbers, $ban, $dash, $numbers));
+$ra_number->add(sprintf("%s%så·", $chome, $numbers, $numbers));
 
 my $jstr = '[\p{Hiragana}\p{Katakana}\p{Han}]';
 
-$ra_aza->add('\p{Han}+ÃúÌÜ');
-$ra_aza->add(sprintf('%sÃúÌÜ', $number));
-$ra_aza->add(sprintf('%sÂè%sÃÏ³ä', $jstr, $number));
-$ra_aza->add(sprintf('%s%sÃÏ³ä', $jstr, $number));
-$ra_aza->add(sprintf("%s*%sÀş", $jstr, $number));
-$ra_aza->add(sprintf("%s*%s¾ò", $jstr, $number));
-$ra_aza->add(sprintf("%s*%s¾òÄÌ¤ê", $jstr, $number));
-$ra_aza->add(sprintf("%s*%s¾òÄÌ", $jstr, $number));
-$ra_aza->add(sprintf("%s*%sÄÌ¤ê", $jstr, $number));
-$ra_aza->add(sprintf("%s*%sÄÌ", $jstr, $number));
-$ra_aza->add(sprintf("Âç»ú%s¾®»ú%s", $jstr, $jstr));
-$ra_aza->add(sprintf("Âç»ú%s»ú%s", $jstr, $jstr));
-$ra_aza->add(sprintf("Âç»ú%s", $jstr, $jstr));
-$ra_aza->add(sprintf("»ú%s¾®»ú%s", $jstr, $jstr));
-$ra_aza->add(sprintf("»ú%s", $jstr, $jstr));
-$ra_aza->add(sprintf("%s»ú%s", $jstr, $jstr));
+$ra_aza->add('\p{Han}+ä¸ç›®');
+$ra_aza->add(sprintf('%sä¸ç›®', $number));
+$ra_aza->add(sprintf('%sç¬¬%såœ°å‰²', $jstr, $number));
+$ra_aza->add(sprintf('%s%såœ°å‰²', $jstr, $number));
+$ra_aza->add(sprintf("%s*%sç·š", $jstr, $number));
+$ra_aza->add(sprintf("%s*%sæ¡", $jstr, $number));
+$ra_aza->add(sprintf("%s*%sæ¡é€šã‚Š", $jstr, $number));
+$ra_aza->add(sprintf("%s*%sæ¡é€š", $jstr, $number));
+$ra_aza->add(sprintf("%s*%sé€šã‚Š", $jstr, $number));
+$ra_aza->add(sprintf("%s*%sé€š", $jstr, $number));
+$ra_aza->add(sprintf("å¤§å­—%så°å­—%s", $jstr, $jstr));
+$ra_aza->add(sprintf("å¤§å­—%så­—%s", $jstr, $jstr));
+$ra_aza->add(sprintf("å¤§å­—%s", $jstr, $jstr));
+$ra_aza->add(sprintf("å­—%så°å­—%s", $jstr, $jstr));
+$ra_aza->add(sprintf("å­—%s", $jstr, $jstr));
+$ra_aza->add(sprintf("%så­—%s", $jstr, $jstr));
 $ra_aza->add("$jstr*?");
 
 #make Regexp/Number
